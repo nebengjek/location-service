@@ -23,7 +23,7 @@ func InituserHttpHandler(e *echo.Echo, uq user.UsecaseQuery, uc user.UsecaseComm
 	route := e.Group("/users")
 	route.GET("/profile", handler.Getuser, middlewares.VerifyBearer)
 	route.POST("/v1/post-location", handler.PostLocation, middlewares.VerifyBearer)
-	route.POST("/v1/find-driver", handler.FindDriver, middlewares.VerifyBearer)
+	route.GET("/v1/find-driver", handler.FindDriver, middlewares.VerifyBearer)
 
 }
 
@@ -61,7 +61,7 @@ func (u userHttpHandler) PostLocation(c echo.Context) error {
 
 func (u userHttpHandler) FindDriver(c echo.Context) error {
 	userId := utils.ConvertString(c.Get("userId"))
-	result := u.userUseCaseCommand.FindDriver(userId, c.Request().Context())
+	result := u.userUsecaseQuery.FindDriver(userId, c.Request().Context())
 
 	if result.Error != nil {
 		return utils.ResponseError(result.Error, c)

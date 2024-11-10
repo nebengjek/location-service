@@ -40,22 +40,36 @@ func (c *commandUsecase) ActivateBeacon(driverId string, payload models.BeaconRe
 	now := time.Now()
 	formattedDate := now.Format("2006-01-02")
 	driver, _ := driverInfo.Data.(models.User)
-	workLogData := models.WorkLog{
-		DriverID: driver.Id,
-		WorkDate: formattedDate,
-	}
+	var workLogData models.WorkLog
 
 	workLog := <-c.driverRepositoryQuery.FindWorkLog(driver.Id, formattedDate, ctx)
-	if workLog.Data != nil {
+	if workLog.Error == nil && workLog.Data != nil {
 		workLogData = workLog.Data.(models.WorkLog)
+	} else {
+		workLogData = models.WorkLog{
+			DriverID: driver.Id,
+			WorkDate: formattedDate,
+		}
 	}
+	if len(workLogData.Log) > 0 {
+		lastLog := workLogData.Log[len(workLogData.Log)-1]
 
-	workLogData.Log = append(workLogData.Log, models.LogActivity{
-		WorkTime: now,
-		Active:   payload.Status == "work",
-		Status:   payload.Status,
-	})
-
+		if lastLog.Status == payload.Status || now.Sub(lastLog.WorkTime) < time.Minute {
+			fmt.Println("Log tidak diperbarui karena status sama")
+		} else {
+			workLogData.Log = append(workLogData.Log, models.LogActivity{
+				WorkTime: now,
+				Active:   payload.Status == "work",
+				Status:   payload.Status,
+			})
+		}
+	} else {
+		workLogData.Log = append(workLogData.Log, models.LogActivity{
+			WorkTime: now,
+			Active:   payload.Status == "work",
+			Status:   payload.Status,
+		})
+	}
 	beacon := <-c.driverRepositoryCommand.UpsertBeacon(workLogData, ctx)
 	if beacon.Error != nil {
 		errObj := httpError.NewInternalServerError()
@@ -65,6 +79,10 @@ func (c *commandUsecase) ActivateBeacon(driverId string, payload models.BeaconRe
 		return result
 	}
 	urlSocket := fmt.Sprintf("%s?driver=%s", config.GetConfig().SocketUrl, driver.Id)
+	if payload.Status != "work" {
+		urlSocket = "selamat istirahat"
+	}
+
 	result.Data = urlSocket
 	return result
 }

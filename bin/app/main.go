@@ -21,8 +21,10 @@ import (
 	driverRepoCommands "location-service/bin/modules/driver/repositories/commands"
 	driverRepoQueries "location-service/bin/modules/driver/repositories/queries"
 	driverUsecase "location-service/bin/modules/driver/usecases"
+
 	"location-service/bin/pkg/apm"
 	"location-service/bin/pkg/databases/mongodb"
+	kafkaConfluent "location-service/bin/pkg/kafka/confluent"
 	"location-service/bin/pkg/utils"
 
 	"location-service/bin/pkg/validator"
@@ -38,6 +40,7 @@ func main() {
 	redis.LoadConfig()
 	redis.InitConnection()
 	mongodb.InitConnection()
+	kafkaConfluent.InitKafkaConfig()
 	log.Init()
 	e := echo.New()
 	e.Validator = &validator.CustomValidator{Validator: validator.New()}
@@ -100,11 +103,15 @@ func setHttp(e *echo.Echo) {
 		log.GetLogger().Info("main", "This service is running properly", "setConfluentEvents", "")
 		return utils.Response(nil, "This service is running properly", 200, c)
 	})
+	kafkaProducer, err := kafkaConfluent.NewProducer(kafkaConfluent.GetConfig().GetKafkaConfig(), log.GetLogger())
+	if err != nil {
+		panic(err)
+	}
 
 	userQueryMongodbRepo := userRepoQueries.NewQueryMongodbRepository(mongodb.NewMongoDBLogger(mongodb.GetSlaveConn(), mongodb.GetSlaveDBName(), log.GetLogger()))
 	userCommandMongodbRepo := userRepoCommands.NewCommandMongodbRepository(mongodb.NewMongoDBLogger(mongodb.GetMasterConn(), mongodb.GetMasterDBName(), log.GetLogger()))
 
-	userQueryUsecase := userUsecase.NewQueryUsecase(userQueryMongodbRepo, redisClient)
+	userQueryUsecase := userUsecase.NewQueryUsecase(userQueryMongodbRepo, redisClient, kafkaProducer)
 	userCommandUsecase := userUsecase.NewCommandUsecase(userQueryMongodbRepo, userCommandMongodbRepo, config.GetConfig().GoogleApiKey, redisClient)
 
 	driverQueryMongodbRepo := driverRepoQueries.NewQueryMongodbRepository(mongodb.NewMongoDBLogger(mongodb.GetSlaveConn(), mongodb.GetSlaveDBName(), log.GetLogger()))

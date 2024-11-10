@@ -42,6 +42,11 @@ type Route struct {
 	Destination LocationRequest `json:"destination"`
 }
 
+type RequestRide struct {
+	RouteSummary RouteSummary `json:"routeSummary" bson:"userId"`
+	UserId       string       `json:"userId" bson:"userId"`
+}
+
 func (r *LocationSuggestionRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)

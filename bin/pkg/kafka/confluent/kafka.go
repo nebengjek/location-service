@@ -1,42 +1,57 @@
 package kafka
 
 import (
+	"encoding/base64"
+	"os"
+
 	"location-service/bin/config"
+	"location-service/bin/pkg/log"
 
 	k "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
-// Producer is collection of function of kafka producer
 type Producer interface {
 	Publish(topic string, message []byte)
 }
 
-// Consumer is collection of function of kafka consumer
 type Consumer interface {
 	SetHandler(handler ConsumerHandler)
 	Subscribe(topics ...string)
 }
 
-// ConsumerHandler is a collection of function for handling kafka message
 type ConsumerHandler interface {
 	HandleMessage(message *k.Message)
 }
 
-///
-
 type KafkaConfig struct {
-	username string
-	password string
-	address  string
+	Username      string
+	Password      string
+	Address       string
+	CA            string
+	SaslMechanism string
 }
 
 var kafkaConfig KafkaConfig
 
 func InitKafkaConfig() {
+	encodedCA := config.GetConfig().KafkaCaCert
+
+	decodedCA, err := base64.StdEncoding.DecodeString(encodedCA)
+	if err != nil {
+		log.GetLogger().Error("decoded-ca", "Failed to decode Kafka CA certificate: %s", "", err.Error())
+	}
+
+	caFilePath := "/tmp/kafka-ca-cert.pem"
+	err = os.WriteFile(caFilePath, decodedCA, 0644)
+	if err != nil {
+		log.GetLogger().Error("write-ca", "Failed to write decoded Kafka CA certificate to file: %s", "", err.Error())
+	}
 	kafkaConfig = KafkaConfig{
-		address:  config.GetConfig().KafkaUrl,
-		username: "",
-		password: "",
+		Address:       config.GetConfig().KafkaUrl,
+		Username:      config.GetConfig().KafkaSaslUsername,
+		Password:      config.GetConfig().KafkaSaslPassword,
+		CA:            caFilePath,
+		SaslMechanism: "PLAIN",
 	}
 }
 
@@ -47,27 +62,15 @@ func GetConfig() KafkaConfig {
 func (kc KafkaConfig) GetKafkaConfig() *k.ConfigMap {
 	kafkaCfg := k.ConfigMap{}
 
-	if kc.username != "" {
-		kafkaCfg.SetKey("sasl.mechanism", "PLAIN")
-		kafkaCfg.SetKey("sasl.username", kc.username)
-		kafkaCfg.SetKey("sasl.password", kc.password)
-
-		//switch securityProtocol {
-		//case "sasl_ssl":
-		//	kafkaCfg.SetKey("security.protocol", securityProtocol)
-		//	kafkaCfg.SetKey("ssl.endpoint.identification.algorithm", "https")
-		//	kafkaCfg.SetKey("enable.ssl.certificate.verification", true)
-		//	break
-		//case "sasl_plaintext":
-		//	kafkaCfg.SetKey("security.protocol", securityProtocol)
-		//	break
-		//default:
-		//	kafkaCfg.SetKey("security.protocol", "sasl_plaintext")
-		//	break
-		//}
+	if kc.Username != "" {
+		kafkaCfg["sasl.mechanism"] = kc.SaslMechanism
+		kafkaCfg["sasl.username"] = kc.Username
+		kafkaCfg["sasl.password"] = kc.Password
+		kafkaCfg["security.protocol"] = "sasl_ssl"
+		kafkaCfg["ssl.ca.location"] = kc.CA
 	}
 
-	kafkaCfg.SetKey("bootstrap.servers", kc.address)
+	kafkaCfg.SetKey("bootstrap.servers", kc.Address)
 	kafkaCfg.SetKey("group.id", config.GetConfig().AppName)
 	kafkaCfg.SetKey("retry.backoff.ms", 500)
 	kafkaCfg.SetKey("socket.max.fails", 10)

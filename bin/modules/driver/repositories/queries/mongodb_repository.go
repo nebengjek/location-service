@@ -62,7 +62,7 @@ func (q queryMongodbRepository) FindWorkLog(driverId string, date string, ctx co
 			CollectionName: "work-log",
 			Filter: bson.M{
 				"driverId": driverId,
-				"WorkDate": date,
+				"workdate": date,
 			},
 		}, ctx)
 		if err != nil {
@@ -70,7 +70,11 @@ func (q queryMongodbRepository) FindWorkLog(driverId string, date string, ctx co
 				Error: err,
 			}
 		}
-
+		if workLog.DriverID == "" {
+			output <- utils.Result{
+				Error: "notfound",
+			}
+		}
 		output <- utils.Result{
 			Data: workLog,
 		}

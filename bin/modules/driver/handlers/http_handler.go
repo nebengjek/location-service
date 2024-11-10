@@ -42,5 +42,5 @@ func (u driverHttpHandler) ActivateBeacon(c echo.Context) error {
 		return utils.ResponseError(result.Error, c)
 	}
 
-	return utils.Response(result.Data, "Route Estimation success", 200, c)
+	return utils.Response(result.Data, "update beacon", 200, c)
 }

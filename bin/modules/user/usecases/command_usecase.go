@@ -75,41 +75,6 @@ func (c *commandUsecase) PostLocation(userId string, payload models.LocationSugg
 	return result
 }
 
-func (c *commandUsecase) FindDriver(userId string, ctx context.Context) utils.Result {
-	var result utils.Result
-
-	key := fmt.Sprintf("USER:ROUTE:%s", userId)
-	var tripPlan models.RouteSummary
-	redisData, errRedis := c.redisClient.Get(ctx, key).Result()
-	if errRedis != nil || redisData == "" {
-		errObj := httpError.NewNotFound()
-		errObj.Message = fmt.Sprintf("Error get data from redis: %v", errRedis)
-		result.Error = errObj
-		log.GetLogger().Error("command_usecase", errObj.Message, "FindDriver", utils.ConvertString(errRedis))
-		return result
-	}
-	err := json.Unmarshal([]byte(redisData), &tripPlan)
-	radius := 1.0
-	drivers, err := c.redisClient.GeoRadius(ctx, "drivers-locations", tripPlan.Route.Origin.Longitude, tripPlan.Route.Origin.Latitude, &redis.GeoRadiusQuery{
-		Radius:    radius,
-		Unit:      "km",
-		WithDist:  true,
-		WithCoord: true,
-		Sort:      "ASC",
-	}).Result()
-
-	if err != nil {
-		errObj := httpError.NewInternalServerError()
-		errObj.Message = fmt.Sprintf("Error searching drivers: %v", err)
-		result.Error = errObj
-		log.GetLogger().Error("command_usecase", errObj.Message, "FindDriver", utils.ConvertString(err))
-		return result
-	}
-
-	result.Data = drivers
-	return result
-}
-
 func (c *commandUsecase) getRouteSuggestions(ctx context.Context, mapsClient *maps.Client, currentRequest models.LocationRequest, destinationRequest models.LocationRequest) (*models.RouteSummary, error) {
 	origin := fmt.Sprintf("%f,%f", currentRequest.Latitude, currentRequest.Longitude)
 	destination := fmt.Sprintf("%f,%f", destinationRequest.Latitude, destinationRequest.Longitude)
