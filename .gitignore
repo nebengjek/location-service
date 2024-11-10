@@ -1,0 +1,10 @@
+.idea/
+.vscode
+vendor
+__debug_bin.exe
+main
+.env
+*.out
+coverages/index.html
+key/*
+tmp/
