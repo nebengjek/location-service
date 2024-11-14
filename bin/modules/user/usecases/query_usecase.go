@@ -23,7 +23,8 @@ type queryUsecase struct {
 }
 
 type Response struct {
-	Message string `json:"message"`
+	Message string      `json:"message"`
+	Driver  interface{} `json:"driver"`
 }
 
 func NewQueryUsecase(mq user.MongodbRepositoryQuery, rh redis.UniversalClient, kp kafkaPkgConfluent.Producer) user.UsecaseQuery {
@@ -87,6 +88,7 @@ func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Resu
 		return result
 	}
 	posibleDriver := "No driver available. Don't worry, please try again later."
+	fmt.Println(drivers, "<<<drivers")
 	if len(drivers) > 0 {
 		kafkaData := models.RequestRide{
 			UserId:       userId,
@@ -99,6 +101,7 @@ func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Resu
 	}
 	result.Data = Response{
 		Message: posibleDriver,
+		Driver:  drivers,
 	}
 
 	return result

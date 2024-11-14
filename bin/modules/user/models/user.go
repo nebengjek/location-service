@@ -43,7 +43,7 @@ type Route struct {
 }
 
 type RequestRide struct {
-	RouteSummary RouteSummary `json:"routeSummary" bson:"userId"`
+	RouteSummary RouteSummary `json:"routeSummary" bson:"routeSummary"`
 	UserId       string       `json:"userId" bson:"userId"`
 }
 

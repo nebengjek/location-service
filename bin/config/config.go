@@ -21,6 +21,8 @@ type envConfig struct {
 	ConfigCors        string
 	IvKey             string
 	KafkaUrl          string
+	KafkaUsername     string
+	KafkaPassword     string
 	KafkaSaslUsername string
 	KafkaSaslPassword string
 	KafkaCaCert       string
@@ -102,6 +104,8 @@ func init() {
 		ConfigCors:           os.Getenv("CORS_CONFIG"),
 		IvKey:                "",
 		KafkaUrl:             os.Getenv("KAFKA_HOST"),
+		KafkaUsername:        os.Getenv("KAFKA_USERNAME"),
+		KafkaPassword:        os.Getenv("KAFKA_PASSWORD"),
 		KafkaSaslUsername:    os.Getenv("KAFKA_SASL_USERNAME"),
 		KafkaSaslPassword:    os.Getenv("KAFKA_SASL_PASSWORD"),
 		KafkaCaCert:          os.Getenv("KAFKA_CA_CERT"),
