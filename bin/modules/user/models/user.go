@@ -30,11 +30,12 @@ type LocationSuggestionResponse struct {
 type LocationRequest struct {
 	Longitude float64 `json:"longitude" validate:"required"`
 	Latitude  float64 `json:"latitude" validate:"required"`
+	Address   string  `json:"address" validate:"required"`
 }
 
 type LocationSuggestionRequest struct {
-	CurrentLocation LocationRequest `json:"currentLocation" `
-	Destination     LocationRequest `json:"destination"`
+	CurrentLocation LocationRequest `json:"currentLocation" validate:"required"`
+	Destination     LocationRequest `json:"destination" validate:"required"`
 }
 
 type Route struct {

@@ -88,7 +88,6 @@ func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Resu
 		return result
 	}
 	posibleDriver := "No driver available. Don't worry, please try again later."
-	fmt.Println(drivers, "<<<drivers")
 	if len(drivers) > 0 {
 		kafkaData := models.RequestRide{
 			UserId:       userId,

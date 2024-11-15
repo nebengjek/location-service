@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"location-service/bin/middlewares"
 	"location-service/bin/modules/user"
 	"location-service/bin/modules/user/models"
+	httpError "location-service/bin/pkg/http-error"
 	"location-service/bin/pkg/utils"
 
 	"github.com/labstack/echo/v4"
@@ -46,7 +48,9 @@ func (u userHttpHandler) PostLocation(c echo.Context) error {
 	}
 
 	if err := request.Validate(); err != nil {
-		return utils.ResponseError(err, c)
+		errObj := httpError.NewBadRequest()
+		errObj.Message = fmt.Sprintf("Request validation error: %v", err.Error())
+		return utils.ResponseError(errObj, c)
 	}
 
 	userId := utils.ConvertString(c.Get("userId"))
