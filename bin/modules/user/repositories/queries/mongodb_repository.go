@@ -49,3 +49,31 @@ func (q queryMongodbRepository) FindOne(userId string, ctx context.Context) <-ch
 
 	return output
 }
+
+func (q queryMongodbRepository) Findwallet(ctx context.Context, userId string) <-chan utils.Result {
+	output := make(chan utils.Result)
+
+	go func() {
+		defer close(output)
+		var wallet models.Wallet
+		err := q.mongoDb.FindOne(mongodb.FindOne{
+			Result:         &wallet,
+			CollectionName: "wallet",
+			Filter: bson.M{
+				"userId": userId,
+			},
+		}, ctx)
+		if err != nil {
+			output <- utils.Result{
+				Error: err,
+			}
+		}
+
+		output <- utils.Result{
+			Data: wallet,
+		}
+
+	}()
+
+	return output
+}

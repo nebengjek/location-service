@@ -1,6 +1,11 @@
 package models
 
-import "github.com/go-playground/validator/v10"
+import (
+	"time"
+
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type User struct {
 	Id           string `json:"_id" bson:"_id"`
@@ -60,4 +65,21 @@ type RouteSummary struct {
 	BestRouteKm       float64 `json:"bestRouteKm"`
 	BestRoutePrice    float64 `json:"bestRoutePrice"`
 	BestRouteDuration string  `json:"bestRouteDuration"`
+	Duration          int     `json:"duration"`
+}
+
+type Wallet struct {
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserID         string             `bson:"userId" json:"userId"`
+	Balance        float64            `bson:"balance" json:"balance"`
+	TransactionLog []TransactionLog   `bson:"transactionLog" json:"transactionLog"`
+	LastUpdated    time.Time          `bson:"lastUpdated" json:"lastUpdated"`
+}
+
+type TransactionLog struct {
+	TransactionID string    `bson:"transactionId" json:"transactionId"`
+	Amount        float64   `bson:"amount" json:"amount"`
+	Type          string    `bson:"type" json:"type"`
+	Description   string    `bson:"description" json:"description"`
+	Timestamp     time.Time `bson:"timestamp" json:"timestamp"`
 }

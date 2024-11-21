@@ -52,7 +52,6 @@ func (q queryUsecase) GetUser(userId string, ctx context.Context) utils.Result {
 
 func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Result {
 	var result utils.Result
-
 	key := fmt.Sprintf("USER:ROUTE:%s", userId)
 	var tripPlan models.RouteSummary
 	redisData, errRedis := q.redisClient.Get(ctx, key).Result()
@@ -69,6 +68,23 @@ func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Resu
 		errObj.Message = fmt.Sprintf("Error unmarshal tripdata: %v", err)
 		result.Error = errObj
 		log.GetLogger().Error("command_usecase", errObj.Message, "FindDriver", utils.ConvertString(err))
+		return result
+	}
+	walletCheck := <-q.userRepositoryQuery.Findwallet(ctx, userId)
+	if walletCheck.Error != nil {
+		errObj := httpError.NewInternalServerError()
+		errObj.Message = fmt.Sprintf("Wallet not found: %v, Please create wallet first", err)
+		result.Error = errObj
+		log.GetLogger().Error("command_usecase", errObj.Message, "FindDriver", utils.ConvertString(err))
+		return result
+	}
+	wallet := walletCheck.Data.(models.Wallet)
+	fmt.Println(wallet.Balance, tripPlan.MaxPrice, "DISNI nih")
+	if wallet.Balance <= tripPlan.MaxPrice {
+		errObj := httpError.NewBadRequest()
+		errObj.Message = "insufficient balance, please topup"
+		result.Error = errObj
+		log.GetLogger().Error("command_usecase", errObj.Message, "FindDriver", "")
 		return result
 	}
 	radius := 3.0

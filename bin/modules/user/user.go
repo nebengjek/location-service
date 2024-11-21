@@ -22,6 +22,7 @@ type UsecaseCommand interface {
 type MongodbRepositoryQuery interface {
 	// idiomatic go, ctx first before payload. See https://pkg.go.dev/context#pkg-overview
 	FindOne(userId string, ctx context.Context) <-chan utils.Result
+	Findwallet(ctx context.Context, userId string) <-chan utils.Result
 }
 
 type MongodbRepositoryCommand interface {

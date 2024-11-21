@@ -63,7 +63,7 @@ func (c *commandUsecase) PostLocation(userId string, payload models.LocationSugg
 		return result
 	}
 
-	redisErr := c.redisClient.Set(ctx, key, routeSummaryJSON, 15*time.Minute).Err()
+	redisErr := c.redisClient.Set(ctx, key, routeSummaryJSON, time.Duration(routeSuggestion.Duration)*time.Minute).Err()
 	if redisErr != nil {
 		errObj := httpError.NewInternalServerError()
 		errObj.Message = fmt.Sprintf("Error saving to redis: %v", redisErr)
@@ -138,6 +138,7 @@ func (c *commandUsecase) getRouteSuggestions(ctx context.Context, mapsClient *ma
 		BestRouteKm:       bestRouteKm,
 		BestRoutePrice:    bestRoutePrice,
 		BestRouteDuration: utils.FormatDuration(int(math.Ceil(bestRouteDuration))),
+		Duration:          int(math.Ceil(bestRouteDuration)),
 	}, nil
 
 }
