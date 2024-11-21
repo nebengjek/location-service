@@ -79,7 +79,6 @@ func (q *queryUsecase) FindDriver(userId string, ctx context.Context) utils.Resu
 		return result
 	}
 	wallet := walletCheck.Data.(models.Wallet)
-	fmt.Println(wallet.Balance, tripPlan.MaxPrice, "DISNI nih")
 	if wallet.Balance <= tripPlan.MaxPrice {
 		errObj := httpError.NewBadRequest()
 		errObj.Message = "insufficient balance, please topup"
