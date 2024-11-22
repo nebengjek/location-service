@@ -54,8 +54,6 @@ func main() {
 	e.Use(apmechov4.Middleware(apmechov4.WithTracer(apm.GetTracer())))
 
 	e.Use(middleware.CORSWithConfig(middleware.DefaultCORSConfig))
-	setConfluentEvents()
-
 	setHttp(e)
 
 	listenerPort := fmt.Sprintf(":%s", config.GetConfig().AppPort)
@@ -91,10 +89,6 @@ func main() {
 
 	<-done
 	log.GetLogger().Info("main", fmt.Sprintf("Server %s stopped", config.GetConfig().AppName), "gracefull", "")
-}
-
-func setConfluentEvents() {
-
 }
 
 func setHttp(e *echo.Echo) {
