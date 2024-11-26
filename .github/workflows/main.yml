@@ -22,7 +22,7 @@ jobs:
       - name: Run Unit Test
         run: |
           make install
-          make cover
+          make test
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
