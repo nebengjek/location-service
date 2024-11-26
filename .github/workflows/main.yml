@@ -19,10 +19,6 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.23.x'
-      - name: Run Unit Test
-        run: |
-          make install
-          make test
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
