@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	"location-service/bin/config"
-	"location-service/bin/pkg/logstash"
+	// "location-service/bin/pkg/logstash"
 )
 
 type Log struct {
@@ -15,7 +15,8 @@ type Log struct {
 }
 
 var logger Log
-var logstsh *logstash.Logstash
+
+// var logstsh *logstash.Logstash
 var mapOfLogLevel = map[string]int{
 	"ERROR": 2,
 	"DEBUG": 1,
@@ -23,15 +24,15 @@ var mapOfLogLevel = map[string]int{
 var serviceName map[string]interface{}
 
 func Init() {
-	logstsh = logstash.New(config.GetConfig().LogstashHost, config.GetConfig().LogstashPortInt(), 5)
+	// logstsh = logstash.New(config.GetConfig().LogstashHost, config.GetConfig().LogstashPortInt(), 5)
 	logger = Log{
 		appName:  config.GetConfig().AppName,
 		logLevel: mapOfLogLevel[config.GetConfig().LogLevel],
 	}
 
-	if _, err := logstsh.Connect(); err != nil {
-		println(err.Error())
-	}
+	// if _, err := logstsh.Connect(); err != nil {
+	// 	println(err.Error())
+	// }
 }
 
 func GetLogger() Log {
