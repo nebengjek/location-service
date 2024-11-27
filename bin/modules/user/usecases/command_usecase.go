@@ -63,7 +63,7 @@ func (c *commandUsecase) PostLocation(userId string, payload models.LocationSugg
 		return result
 	}
 
-	redisErr := c.redisClient.Set(ctx, key, routeSummaryJSON, time.Duration(routeSuggestion.Duration)*time.Minute).Err()
+	redisErr := c.redisClient.Set(ctx, key, routeSummaryJSON, 60*time.Minute).Err()
 	if redisErr != nil {
 		errObj := httpError.NewInternalServerError()
 		errObj.Message = fmt.Sprintf("Error saving to redis: %v", redisErr)
